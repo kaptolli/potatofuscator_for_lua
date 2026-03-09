@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>POTATFUSCATOR | RESTORED & STYLED</title>
+    <style>
+        :root { 
+            --accent: #3498db; 
+            --panel: rgba(10, 20, 35, 0.97); 
+        }
+        
+        body, html { 
+            margin: 0; padding: 0; width: 100%; height: 100%; 
+            background: #050a14; overflow: hidden; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .city-layer {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(180deg, #0a192f 0%, #000c1d 100%);
+            z-index: -2;
+        }
+        .city-layer::after {
+            content: ''; position: absolute; bottom: 0; width: 100%; height: 70%;
+            background: repeating-linear-gradient(90deg, #0d1a31 0 60px, transparent 60 150px);
+            filter: blur(45px); opacity: 0.7;
+        }
+
+        #rainCanvas { 
+            position: fixed; top: 0; left: 0; 
+            width: 100%; height: 100%; 
+            z-index: 1; pointer-events: none;
+        }
+
+        .wrapper {
+            position: relative; z-index: 10;
+            display: flex; align-items: center; justify-content: center;
+            min-height: 100vh; padding: 20px; box-sizing: border-box;
+        }
+
+        .container {
+            width: 100%; max-width: 420px;
+            background: var(--panel);
+            border: 1px solid rgba(52, 152, 219, 0.15);
+            box-shadow: 0 40px 100px rgba(0, 0, 0, 0.9);
+            padding: 30px; border-radius: 40px;
+            text-align: center; color: #fff;
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+        }
+
+        h1 { font-size: 13px; letter-spacing: 5px; margin-bottom: 25px; color: var(--accent); opacity: 0.9; text-transform: uppercase; }
+
+        textarea {
+            width: 100%; height: 110px; background: rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.08); color: #fff;
+            padding: 15px; font-size: 13px; border-radius: 22px;
+            outline: none; resize: none; box-sizing: border-box; margin-bottom: 12px;
+            font-family: 'Courier New', monospace;
+            transition: border 0.3s;
+        }
+
+        textarea:focus { border-color: var(--accent); }
+
+        button {
+            width: 100%; background: #fff; color: #000; border: none;
+            padding: 18px; font-weight: 900; border-radius: 22px;
+            cursor: pointer; margin-bottom: 10px; transition: 0.2s;
+            text-transform: uppercase; font-size: 12px;
+        }
+
+        button:active { transform: scale(0.96); }
+
+        .copy-btn { background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.1); }
+
+        .label-row { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 6px; color: #5dade2; font-weight: bold; }
+        input[type=range] { width: 100%; accent-color: var(--accent); margin-bottom: 20px; cursor: pointer; }
+        .status-bar { margin-top: 15px; font-size: 9px; color: #556b8d; text-transform: uppercase; letter-spacing: 1px; }
+    </style>
+</head>
+<body>
+
+    <div class="city-layer"></div>
+    <canvas id="rainCanvas"></canvas>
+
+    <div class="wrapper">
+        <div class="container">
+            <h1>POTATFUSCATOR</h1>
+            
+            <div class="label-row">
+                <span>JUNK INTENSITY</span>
+                <span id="junkVal">45</span>
+            </div>
+            <input type="range" id="junkRange" min="0" max="150" value="45">
+
+            <textarea id="input" placeholder="-- Вставьте ваш исходный Lua код..."></textarea>
+            
+            <button onclick="obfuscate()">ОБФУСЦИРОВАТЬ</button>
+            <button class="copy-btn" onclick="copyCode()">СКОПИРОВАТЬ КОД</button>
+
+            <textarea style="height: 75px; margin-top: 12px; color: #5dade2;" id="output" readonly placeholder="Результат..."></textarea>
+            <div class="status-bar" id="status">V7 RESTORED | HEAVY RAIN | SKIDDER WARNING</div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('rainCanvas');
+        const ctx = canvas.getContext('2d');
+        let w, h, drops = [];
+
+        function init() {
+            w = canvas.width = window.innerWidth;
+            h = canvas.height = window.innerHeight;
+            drops = [];
+            for (let i = 0; i < 110; i++) {
+                drops.push({
+                    x: Math.random() * w,
+                    y: Math.random() * h,
+                    l: Math.random() * 40 + 25, 
+                    v: Math.random() * 14 + 10,
+                    t: Math.random() * 3 + 1.5,
+                    o: Math.random() * 0.3 + 0.15 
+                });
+            }
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, w, h);
+            drops.forEach(d => {
+                ctx.strokeStyle = `rgba(220, 235, 255, ${d.o})`;
+                ctx.lineWidth = d.t;
+                ctx.lineCap = 'round';
+                ctx.beginPath();
+                ctx.moveTo(d.x, d.y);
+                ctx.lineTo(d.x + 0.5, d.y + d.l);
+                ctx.stroke();
+                d.y += d.v;
+                if (d.y > h + 50) { d.y = -70; d.x = Math.random() * w; }
+            });
+            requestAnimationFrame(draw);
+        }
+        window.addEventListener('resize', init);
+        init(); draw();
+
+        document.getElementById('junkRange').oninput = function() {
+            document.getElementById('junkVal').innerHTML = this.value;
+        }
+
+        function genName(len = 7) {
+            const chars = "Il1";
+            let res = "_";
+            for(let i=0; i<len; i++) res += chars[Math.floor(Math.random()*3)];
+            return res;
+        }
+
+        function fold(n) {
+            const r = Math.floor(Math.random() * 50) + 1;
+            return `((${n + r}-${r})*${r}/${r})`;
+        }
+
+        function generateJunk(amount) {
+            let junk = "";
+            for (let i = 0; i < amount; i++) {
+                let name = genName(5);
+                const ops = [`local ${name}=${Math.random()};`, `local function ${name}() return nil end;` ];
+                junk += ops[Math.floor(Math.random()*ops.length)];
+            }
+            return junk;
+        }
+
+        function toUTF8Bytes(str) {
+            const utf8 = unescape(encodeURIComponent(str));
+            const bytes = [];
+            for (let i = 0; i < utf8.length; i++) bytes.push(utf8.charCodeAt(i));
+            return bytes;
+        }
+
+        function obfuscate() {
+            let code = document.getElementById('input').value;
+            if(!code) return;
+
+            const bypass = `local _S=getgenv and getgenv().HttpSpy; if _S then return end; `;
+            code = bypass + code.replace(/--.*$/gm, '').replace(/\s+/g, ' ').trim();
+
+            const k1 = Math.floor(Math.random() * 200) + 10;
+            const k2 = Math.floor(Math.random() * 200) + 10;
+            let bytes = toUTF8Bytes(code).map(b => b ^ k1 ^ k2);
+
+            const vTable = genName();
+            const kTable = genName();
+            const dFunc = genName();
+            const junkLevel = document.getElementById('junkRange').value;
+
+            // Добавлен твой комментарий в начало
+            let res = `--[[Картошка смеётся над тобой грязный скиддер]] `;
+            res += `local ${vTable}={${bytes.join(',')}}; `;
+            res += `local ${kTable}={${fold(k1)},${fold(k2)}}; `;
+            res += `${generateJunk(junkLevel/2)} `;
+            res += `local _t=tick or os.clock; local _start=_t(); `;
+            res += `local function ${dFunc}(d,k) local o="" for i=1,#d do o=o..string.char(d[i]~k[2]~k[1]) end return o end; `;
+            res += `local ok,err=pcall(function() if _t()-_start>1.5 then return end local c=${dFunc}(${vTable},${kTable}) return load(c)() end); `;
+            res += `if not ok and err then print("PotatVM Err: "..tostring(err)) end`;
+
+            document.getElementById('output').value = res.replace(/\s+/g, ' ');
+            document.getElementById('status').innerText = "DONE | BYTES: " + bytes.length;
+        }
+
+        function copyCode() {
+            const out = document.getElementById('output');
+            if(!out.value) return;
+            out.select();
+            document.execCommand('copy');
+            document.getElementById('status').innerText = "COPIED!";
+        }
+    </script>
+</body>
+</html> 
